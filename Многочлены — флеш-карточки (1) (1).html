@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Многочлены — флеш-карточки</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=PT+Serif:ital,wght@1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1f2340;--muted:#5b6080;--paper:#fffdf7;--yellow:#facc15;--green:#16a34a;--green-l:#e3f7ea;--red:#dc2626;--red-l:#fde8e8;--violet:#7c3aed;--violet-l:#efe8ff;--blue-l:#e6f0ff}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);font-family:Nunito,system-ui,sans-serif;min-height:100vh;
+    background-image:radial-gradient(#e9e3d0 1px,transparent 1px);background-size:22px 22px;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:620px;margin:0 auto;padding:22px 16px 40px}
+  header{text-align:center;margin-bottom:14px}
+  .tag{display:inline-block;background:var(--yellow);padding:3px 12px;border-radius:999px;font-weight:800;font-size:13px;transform:rotate(-2deg)}
+  h1{font-size:32px;margin:8px 0 2px;font-weight:900}
+  header p{margin:0;color:var(--muted)}
+  .m{font-family:"PT Serif",Georgia,serif;font-style:italic}
+
+  .stats{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 10px;font-weight:800;font-size:14px}
+  .stat{border:2px solid var(--ink);border-radius:999px;padding:4px 12px;background:#fff}
+  .stat.k{background:var(--green-l)} .stat.r{background:var(--red-l)}
+  .bar{height:10px;border:2px solid var(--ink);border-radius:999px;background:#fff;overflow:hidden;margin-bottom:16px}
+  .bar div{height:100%;background:var(--violet);width:0;transition:width .3s}
+
+  .scene{perspective:1200px;height:380px;cursor:pointer;user-select:none}
+  .card{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.3,.7,.3,1);transform-style:preserve-3d}
+  .card.flipped{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:2px solid var(--ink);border-radius:22px;
+    box-shadow:6px 6px 0 var(--ink);padding:22px;display:flex;flex-direction:column;background:#fff}
+  .front{background:#fff}
+  .back{transform:rotateY(180deg);background:var(--green-l)}
+  .top{display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;color:var(--muted)}
+  .topic{background:var(--violet-l);color:var(--violet);border-radius:999px;padding:3px 10px;border:1.5px solid var(--violet)}
+  .q{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;font-weight:800;line-height:1.35;padding:6px}
+  .q .m{font-size:1.15em;display:inline-block;margin-top:6px}
+  .ans{font-size:30px;font-weight:900;text-align:center;margin:14px 0 8px;font-family:"PT Serif",serif;font-style:italic;color:#15803d}
+  .ans.text{font-family:Nunito;font-style:normal}
+  .expl{flex:1;font-size:17px;line-height:1.5;text-align:center;display:flex;align-items:center;justify-content:center}
+  .tap{text-align:center;font-size:13px;color:var(--muted);font-weight:700}
+  .hintbtn{align-self:center;background:#fff;border:2px dashed var(--ink);border-radius:999px;padding:5px 14px;font:inherit;font-weight:800;font-size:14px;cursor:pointer}
+  .hint{text-align:center;background:#fff8d6;border-radius:12px;padding:8px 12px;font-size:15px;margin-top:8px;display:none}
+  .hint.show{display:block}
+
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px}
+  button.btn{font:inherit;font-weight:900;font-size:17px;border:2px solid var(--ink);border-radius:16px;padding:14px 10px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);background:#fff;color:var(--ink)}
+  button.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+  .btn.again{background:var(--red-l)} .btn.know{background:var(--green-l)}
+  .btn.flip{grid-column:1/-1;background:var(--yellow)}
+  .nav{display:flex;justify-content:space-between;gap:10px;margin-top:12px}
+  .nav button{flex:1;font:inherit;font-weight:800;font-size:14px;background:transparent;border:2px solid var(--ink);border-radius:12px;padding:8px;cursor:pointer;color:var(--ink)}
+  .hidden{display:none!important}
+
+  .done{text-align:center;background:#fff;border:2px solid var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);padding:28px 20px}
+  .done .big{font-size:56px}
+  .done h2{margin:6px 0;font-size:28px}
+  .done p{color:var(--muted);font-size:17px}
+  .keys{text-align:center;color:var(--muted);font-size:13px;margin-top:18px}
+  @media(max-width:480px){.scene{height:400px}.q{font-size:21px}.ans{font-size:26px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="tag">Алгебра · 7 класс</span>
+    <h1>Многочлены 🃏</h1>
+    <p>Подумай над вопросом, потом нажми на карточку и проверь себя</p>
+  </header>
+
+  <div id="game">
+    <div class="stats">
+      <span class="stat" id="pos">Карточка 1 из 14</span>
+      <span class="stat k" id="known">✓ Знаю: 0</span>
+      <span class="stat r" id="again">↻ Повторить: 0</span>
+    </div>
+    <div class="bar"><div id="fill"></div></div>
+
+    <div class="scene" id="scene">
+      <div class="card" id="card">
+        <div class="face front">
+          <div class="top"><span class="topic" id="topicF"></span><span>вопрос</span></div>
+          <div class="q" id="q"></div>
+          <button class="hintbtn" id="hintbtn">💡 Подсказка</button>
+          <div class="hint" id="hint"></div>
+          <div class="tap" style="margin-top:10px">👆 нажми, чтобы перевернуть</div>
+        </div>
+        <div class="face back">
+          <div class="top"><span class="topic" id="topicB"></span><span>ответ</span></div>
+          <div class="ans" id="a"></div>
+          <div class="expl" id="e"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn flip" id="flipBtn">Перевернуть 🔄</button>
+      <button class="btn again hidden" id="againBtn">↻ Ещё повторить</button>
+      <button class="btn know hidden" id="knowBtn">✓ Знаю!</button>
+    </div>
+    <div class="nav">
+      <button id="prevBtn">← Назад</button>
+      <button id="shuffleBtn">🔀 Перемешать</button>
+      <button id="nextBtn">Пропустить →</button>
+    </div>
+    <div class="keys">На компьютере: пробел — перевернуть, ← → — листать</div>
+  </div>
+
+  <div class="done hidden" id="done">
+    <div class="big" id="doneEmoji">🎉</div>
+    <h2 id="doneTitle">Колода пройдена!</h2>
+    <p id="doneText"></p>
+    <div class="controls">
+      <button class="btn again" id="repeatBtn">↻ Повторить трудные</button>
+      <button class="btn know" id="restartBtn">Начать заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CARDS = [
+  {t:"Одночлен", q:'Что такое <b>одночлен</b>?', a:"Произведение чисел и букв", text:true,
+   e:'Внутри одночлена есть только умножение, без «+» и «−».<br>Примеры: <span class="m">7x²y</span>, <span class="m">−3a</span>, <span class="m">x</span>, <span class="m">12</span>', h:'Вспомни «кирпичик» из конспекта'},
+  {t:"Одночлен", q:'Какое выражение — одночлен?<br><span class="m">a + b</span> &nbsp;·&nbsp; <span class="m">7x²y</span> &nbsp;·&nbsp; <span class="m">2x − 5</span>', a:"7x²y",
+   e:'В остальных выражениях есть «+» или «−», значит, это уже многочлены.', h:'Ищи выражение без плюса и минуса'},
+  {t:"Степень", q:'Чему равна степень одночлена<br><span class="m">−3a²b³</span>?', a:"5",
+   e:'Складываем показатели букв: 2 + 3 = 5.<br>Число −3 не считаем!', h:'Сложи показатели степеней у букв'},
+  {t:"Коэффициент", q:'Какой коэффициент у одночлена<br><span class="m">−4xy²</span>?', a:"−4",
+   e:'Коэффициент — это число впереди <b>вместе со знаком</b>.', h:'Не забудь про знак'},
+  {t:"Стандартный вид", q:'Приведи к стандартному виду:<br><span class="m">2a · 3b · a</span>', a:"6a²b",
+   e:'2 · 3 = 6, &nbsp;a · a = a².<br>Сначала число, потом буквы по алфавиту.', h:'Числа перемножают, одинаковые буквы собирают вместе'},
+  {t:"Подобные члены", q:'Какой одночлен подобен <span class="m">5x²y</span>?<br><span class="m">5xy²</span> &nbsp;·&nbsp; <span class="m">−2x²y</span> &nbsp;·&nbsp; <span class="m">5x²</span>', a:"−2x²y",
+   e:'У подобных членов <b>одинаковая буквенная часть</b>: те же буквы в тех же степенях. Числа могут быть разными.', h:'Смотри на буквы и степени, а не на числа'},
+  {t:"Подобные члены", q:'Приведи подобные:<br><span class="m">4x + 3y − x + 2y</span>', a:"3x + 5y",
+   e:'4x − x = 3x, &nbsp;3y + 2y = 5y.<br>Иксы с игреками не складываем: это «яблоки и груши» 🍎🍐', h:'Отдельно собери x и отдельно y'},
+  {t:"Степень многочлена", q:'Степень многочлена<br><span class="m">x³ + 2x⁵ − 7</span>?', a:"5",
+   e:'Степени членов: 3, 5 и 0.<br>Степень многочлена — <b>самая большая</b> из них.', h:'Степени не складывают, а выбирают наибольшую'},
+  {t:"Свободный член", q:'Какой свободный член у многочлена<br><span class="m">3x² − 5x + 8</span>?', a:"8",
+   e:'Свободный член — это число <b>без букв</b>.', h:'Ищи член без букв'},
+  {t:"Умножение", q:'Чему равно<br><span class="m">x³ · x⁴</span>?', a:"x⁷",
+   e:'При умножении показатели <b>складываются</b>: 3 + 4 = 7.<br><span class="m">aᵐ · aⁿ = aᵐ⁺ⁿ</span>', h:'Складывать или умножать показатели?'},
+  {t:"Вычитание", q:'Найди разность:<br><span class="m">(2x² − 3x + 1) − (x² − 3x + 4)</span>', a:"x² − 3",
+   e:'Минус перед скобкой меняет <b>все</b> знаки:<br><span class="m">2x² − 3x + 1 − x² + 3x − 4</span>', h:'Минус перед скобкой меняет знак у каждого члена'},
+  {t:"«Фонтан»", q:'Раскрой скобки:<br><span class="m">3x(x − 4)</span>', a:"3x² − 12x",
+   e:'3x умножаем на <b>каждый</b> член скобки:<br>3x · x = 3x², &nbsp;3x · (−4) = −12x', h:'Умножь 3x на оба члена в скобке'},
+  {t:"Каждый с каждым", q:'Перемножь:<br><span class="m">(x − 1)(x + 5)</span>', a:"x² + 4x − 5",
+   e:'x² + 5x − x − 5.<br>Подобные: 5x − x = 4x.', h:'Должно получиться 4 произведения'},
+  {t:"Общий множитель", q:'Вынеси общий множитель:<br><span class="m">8a³ − 12a²</span>', a:"4a²(2a − 3)",
+   e:'Число: 8 и 12 делятся на <b>4</b>.<br>Буква: a в наименьшей степени — <b>a²</b>.', h:'Наибольшее общее число и буква в наименьшей степени'},
+  {t:"Разность квадратов", q:'Разложи на множители:<br><span class="m">49 − y²</span>', a:"(7 − y)(7 + y)",
+   e:'49 = 7², значит, это разность квадратов:<br><span class="m">x² − y² = (x − y)(x + y)</span>', h:'Какое число в квадрате даёт 49?'},
+  {t:"Ошибка?", q:'Правильно ли:<br><span class="m">2a + 3b = 5ab</span>?', a:"Нет!", text:true,
+   e:'<span class="m">2a</span> и <span class="m">3b</span> не подобные, сложить их нельзя.<br>Ответ остаётся <span class="m">2a + 3b</span>.', h:'Одинаковые ли у них буквы?'}
+];
+
+let deck=[], i=0, known=new Set(), again=new Set(), total=0;
+const $=id=>document.getElementById(id);
+
+function start(indices){
+  deck=indices; i=0; known=new Set(); again=new Set(); total=deck.length;
+  $('game').classList.remove('hidden'); $('done').classList.add('hidden');
+  render();
+}
+function render(){
+  const c=CARDS[deck[i]];
+  const wasFlipped=$('card').classList.contains('flipped');
+  $('card').classList.remove('flipped');
+  setTimeout(()=>{
+    $('q').innerHTML=c.q; $('a').innerHTML=c.a; $('e').innerHTML=c.e;
+    $('a').classList.toggle('text',!!c.text);
+    $('topicF').textContent=c.t; $('topicB').textContent=c.t;
+    $('hint').textContent='💡 '+c.h; $('hint').classList.remove('show');
+  }, wasFlipped?280:0);
+  $('pos').textContent=`Карточка ${i+1} из ${deck.length}`;
+  $('known').textContent=`✓ Знаю: ${known.size}`;
+  $('again').textContent=`↻ Повторить: ${again.size}`;
+  $('fill').style.width=((known.size+again.size)/total*100)+'%';
+  showAnswerButtons(false);
+}
+function showAnswerButtons(on){
+  $('flipBtn').classList.toggle('hidden',on);
+  $('againBtn').classList.toggle('hidden',!on);
+  $('knowBtn').classList.toggle('hidden',!on);
+}
+function flip(){
+  const f=$('card').classList.toggle('flipped');
+  showAnswerButtons(f);
+}
+function go(d){
+  i=(i+d+deck.length)%deck.length; render();
+}
+function mark(ok){
+  const id=deck[i];
+  if(ok){known.add(id);again.delete(id);} else {again.add(id);known.delete(id);}
+  if(known.size+again.size>=total){finish();return;}
+  // следующая неотмеченная карточка
+  for(let s=1;s<=deck.length;s++){
+    const n=(i+s)%deck.length;
+    if(!known.has(deck[n])&&!again.has(deck[n])){i=n;break;}
+  }
+  render();
+}
+function finish(){
+  $('game').classList.add('hidden'); $('done').classList.remove('hidden');
+  const k=known.size, a=again.size;
+  $('doneEmoji').textContent = a===0?'🏆':(k>=a?'💪':'📚');
+  $('doneTitle').textContent = a===0?'Всё знаешь, отлично!':'Колода пройдена!';
+  $('doneText').innerHTML = `Знаю: <b>${k}</b> · Нужно повторить: <b>${a}</b>` +
+    (a?'<br>Повтори трудные карточки, пока они не перейдут в «Знаю».':'');
+  $('repeatBtn').classList.toggle('hidden',a===0);
+}
+function shuffle(arr){const b=[...arr];for(let j=b.length-1;j>0;j--){const r=Math.floor(Math.random()*(j+1));[b[j],b[r]]=[b[r],b[j]];}return b;}
+
+$('scene').addEventListener('click',e=>{ if(e.target.closest('#hintbtn')) return; flip(); });
+$('hintbtn').addEventListener('click',e=>{e.stopPropagation();$('hint').classList.toggle('show');});
+$('flipBtn').onclick=flip;
+$('knowBtn').onclick=()=>mark(true);
+$('againBtn').onclick=()=>mark(false);
+$('prevBtn').onclick=()=>go(-1);
+$('nextBtn').onclick=()=>go(1);
+$('shuffleBtn').onclick=()=>start(shuffle(CARDS.map((_,k)=>k)));
+$('restartBtn').onclick=()=>start(CARDS.map((_,k)=>k));
+$('repeatBtn').onclick=()=>start(shuffle([...again]));
+document.addEventListener('keydown',e=>{
+  if($('game').classList.contains('hidden')) return;
+  if(e.code==='Space'){e.preventDefault();flip();}
+  else if(e.key==='ArrowRight') go(1);
+  else if(e.key==='ArrowLeft') go(-1);
+});
+start(CARDS.map((_,k)=>k));
+</script>
+</body>
+</html>
